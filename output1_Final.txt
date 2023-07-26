@@ -1,0 +1,219 @@
+ //***************************************************************************************************************************************//
+ /*
+ Project Name : SmartOps Phase-2
+ Task : Reading data From IoT Hub to FunctionApp
+ Developed on : November
+ Developed by :Avinash
+ Version : "1.20"
+ Program Language : C#
+ Reviewed by : Gouri Sankar "06-12-2021"
+ */
+
+
+
+ using IoTHubTrigger = Microsoft.Azure.WebJobs.EventHubTriggerAttribute;
+ using System.Data;
+ //using System.Data.SqlClient;
+ //using Microsoft.Data.SqlClient;
+ using Microsoft.Azure.WebJobs;
+ using Microsoft.Azure.WebJobs.Host;
+ using Microsoft.Azure.EventHubs;
+ using System.Text;
+ using System.Net.Http;
+ using Microsoft.Extensions.Logging;
+ using Newtonsoft.Json;
+ using System;
+ using System.Collections.Generic;
+ using Microsoft.Azure.Services.AppAuthentication;
+ using System.Security;
+
+
+
+ using Microsoft.IdentityModel.Clients.ActiveDirectory;
+ using Microsoft.Data.SqlClient;
+
+
+
+ namespace IoTtoSql
+ {
+ public static class IoThubToSqlDB
+ {
+ private static HttpClient client = new HttpClient();
+
+
+
+ [FunctionName(" IoThubToSqlDB ")]
+ public static void Run([IoTHubTrigger(" iottoadttest ", Connection = " AzureIoThubCnnectionString ")] EventData message, ILogger log)
+ {
+ // Read IoT hub receiving data
+ log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");
+ var deviceid = message.SystemProperties["iothub-connection-device-id"].ToString();
+
+
+
+
+ try
+ {
+ //parsing the input json data
+
+
+
+ Telemetry tsmg = JsonConvert.DeserializeObject<Telemetry>(Encoding.UTF8.GetString(message.Body.Array));
+
+
+
+ // Providing SQL credentials
+
+ string strcon = @"Server=tcp:covtest.database.windows.net,1433;Initial Catalog=Smart_Mfgs;Persist Security Info=False;User ID=covadmin;Password=covtest@01;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
+
+
+ using (SqlConnection con = new SqlConnection(strcon))
+ {
+
+
+
+ con.Open();
+ if (con.State == ConnectionState.Open)
+ {
+
+
+
+ String query = $"INSERT INTO CF.STG_PLC (Plant_Id,Plant_Name,Machine_Id,TC_SVTU,TC_WWN,TC_LMR,TC_UMR,TC_HPPN,TC_HKPN,Roll_Flags,ShiftNumber,L_Seal_Temp_1_Front,L_Seal_Temp_1_Back,L_Seal_Temp_2_Front,L_Seal_Temp_2_Back,L_Seal_Temp_3_Front,L_Seal_Temp_3_Back,L_Seal_Temp_4_Front,L_Seal_Temp_4_Back,L_Seal_Temp_5_Front,L_Seal_Temp_5_Back,L_Seal_Temp_6_Front,L_Seal_Temp_6_Back,L_Seal_Temp_7_Front,L_Seal_Temp_7_Back, Hole_Punch,Heater_Bar_Temp_1A,Heater_Bar_Temp_1B,Heater_Bar_Temp_2A,Heater_Bar_Temp_2B,Heater_Bar_Temp_P,Heater_Bar_Temp_S,TC_1,TC_2,TC_Edge_Trim,TC_Torch,TC_Marriage_Roll,TC_Inspection_Drive,TC_Web_Slitting,Opening_Validation,Machine_Speed,Up_Down_Time,Bag_Counter,DeclareBags,Sealer_Alarm,Registration_Alarm,Drum_Temp )" +
+
+ $"VALUES (@Plant_Id,@Plant_Name,@Machine_Id,@TC_SVTU,@TC_WWN,@TC_LMR,@TC_UMR,@TC_HPPN,@TC_HKPN,@Roll_Flags,@ShiftNumber,@L_Seal_Temp_1_Front,@L_Seal_Temp_1_Back,@L_Seal_Temp_2_Front,@L_Seal_Temp_2_Back,@L_Seal_Temp_3_Front,@L_Seal_Temp_3_Back,@L_Seal_Temp_4_Front,@L_Seal_Temp_4_Back,@L_Seal_Temp_5_Front,@L_Seal_Temp_5_Back,@L_Seal_Temp_6_Front,@L_Seal_Temp_6_Back,@L_Seal_Temp_7_Front,@L_Seal_Temp_7_Back,@ Hole_Punch,@Heater_Bar_Temp_1A,@Heater_Bar_Temp_1B,@Heater_Bar_Temp_2A,@Heater_Bar_Temp_2B,@Heater_Bar_Temp_P,@Heater_Bar_Temp_S,@TC_1,@TC_2,@TC_Edge_Trim,@TC_Torch,@TC_Marriage_Roll,@TC_Inspection_Drive,@TC_Web_Slitting,@Opening_Validation,@Machine_Speed,@Up_Down_Time,@Bag_Counter,@DeclareBags,@Sealer_Alarm,@Registration_Alarm,@Drum_Temp )";
+
+
+
+
+
+
+ SqlCommand sqlcmd1 = new SqlCommand(query, con);
+
+
+ sqlcmd.Parameters.AddWithValue("@Plant_Id",tsmg.Plant_Id);
+sqlcmd.Parameters.AddWithValue("@Plant_Name",tsmg.Plant_Name);
+sqlcmd.Parameters.AddWithValue("@Machine_Id",tsmg.Machine_Id);
+sqlcmd.Parameters.AddWithValue("@TC_SVTU",tsmg.TC_SVTU);
+sqlcmd.Parameters.AddWithValue("@TC_WWN",tsmg.TC_WWN);
+sqlcmd.Parameters.AddWithValue("@TC_LMR",tsmg.TC_LMR);
+sqlcmd.Parameters.AddWithValue("@TC_UMR",tsmg.TC_UMR);
+sqlcmd.Parameters.AddWithValue("@TC_HPPN",tsmg.TC_HPPN);
+sqlcmd.Parameters.AddWithValue("@TC_HKPN",tsmg.TC_HKPN);
+sqlcmd.Parameters.AddWithValue("@Roll_Flags",tsmg.Roll_Flags);
+sqlcmd.Parameters.AddWithValue("@ShiftNumber",tsmg.ShiftNumber);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_1_Front",tsmg.L_Seal_Temp_1_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_1_Back",tsmg.L_Seal_Temp_1_Back);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_2_Front",tsmg.L_Seal_Temp_2_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_2_Back",tsmg.L_Seal_Temp_2_Back);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_3_Front",tsmg.L_Seal_Temp_3_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_3_Back",tsmg.L_Seal_Temp_3_Back);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_4_Front",tsmg.L_Seal_Temp_4_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_4_Back",tsmg.L_Seal_Temp_4_Back);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_5_Front",tsmg.L_Seal_Temp_5_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_5_Back",tsmg.L_Seal_Temp_5_Back);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_6_Front",tsmg.L_Seal_Temp_6_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_6_Back",tsmg.L_Seal_Temp_6_Back);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_7_Front",tsmg.L_Seal_Temp_7_Front);
+sqlcmd.Parameters.AddWithValue("@L_Seal_Temp_7_Back",tsmg.L_Seal_Temp_7_Back);
+sqlcmd.Parameters.AddWithValue("@Hole_Punch",tsmg.Hole_Punch);
+sqlcmd.Parameters.AddWithValue("@Heater_Bar_Temp_1A",tsmg.Heater_Bar_Temp_1A);
+sqlcmd.Parameters.AddWithValue("@Heater_Bar_Temp_1B",tsmg.Heater_Bar_Temp_1B);
+sqlcmd.Parameters.AddWithValue("@Heater_Bar_Temp_2A",tsmg.Heater_Bar_Temp_2A);
+sqlcmd.Parameters.AddWithValue("@Heater_Bar_Temp_2B",tsmg.Heater_Bar_Temp_2B);
+sqlcmd.Parameters.AddWithValue("@Heater_Bar_Temp_P",tsmg.Heater_Bar_Temp_P);
+sqlcmd.Parameters.AddWithValue("@Heater_Bar_Temp_S",tsmg.Heater_Bar_Temp_S);
+sqlcmd.Parameters.AddWithValue("@TC_1",tsmg.TC_1);
+sqlcmd.Parameters.AddWithValue("@TC_2",tsmg.TC_2);
+sqlcmd.Parameters.AddWithValue("@TC_Edge_Trim",tsmg.TC_Edge_Trim);
+sqlcmd.Parameters.AddWithValue("@TC_Torch",tsmg.TC_Torch);
+sqlcmd.Parameters.AddWithValue("@TC_Marriage_Roll",tsmg.TC_Marriage_Roll);
+sqlcmd.Parameters.AddWithValue("@TC_Inspection_Drive",tsmg.TC_Inspection_Drive);
+sqlcmd.Parameters.AddWithValue("@TC_Web_Slitting",tsmg.TC_Web_Slitting);
+sqlcmd.Parameters.AddWithValue("@Opening_Validation",tsmg.Opening_Validation);
+sqlcmd.Parameters.AddWithValue("@Machine_Speed",tsmg.Machine_Speed);
+sqlcmd.Parameters.AddWithValue("@Up_Down_Time",tsmg.Up_Down_Time);
+sqlcmd.Parameters.AddWithValue("@Bag_Counter",tsmg.Bag_Counter);
+sqlcmd.Parameters.AddWithValue("@DeclareBags",tsmg.DeclareBags);
+sqlcmd.Parameters.AddWithValue("@Sealer_Alarm",tsmg.Sealer_Alarm);
+sqlcmd.Parameters.AddWithValue("@Registration_Alarm",tsmg.Registration_Alarm);
+sqlcmd.Parameters.AddWithValue("@Drum_Temp",tsmg.Drum_Temp);
+
+ // Need to add some more code//
+
+
+
+ }
+ con.Close();
+ Console.WriteLine("***************DONE**************");
+ }
+ }
+ catch (Exception e)
+ {
+ log.LogInformation(e.Message);
+ }
+
+
+
+ }
+ }
+
+
+
+ // input parameters maping to sql db from input data
+ public class Telemetry
+ {
+
+
+ public string Plant_Id {get;set;}
+public string Plant_Name {get;set;}
+public string Machine_Id {get;set;}
+public float TC_SVTU {get;set;}
+ public float TC_WWN {get;set;}
+ public float TC_LMR {get;set;}
+ public float TC_UMR {get;set;}
+public float TC_HPPN {get;set;}
+public float TC_HKPN {get;set;}
+ public int Roll_Flags {get;set;}
+public int ShiftNumber {get;set;}
+public int L_Seal_Temp_1_Front {get;set;}
+ public int L_Seal_Temp_1_Back {get;set;}
+public int L_Seal_Temp_2_Front {get;set;}
+ public int L_Seal_Temp_2_Back {get;set;}
+public int L_Seal_Temp_3_Front {get;set;}
+ public int L_Seal_Temp_3_Back {get;set;}
+public int L_Seal_Temp_4_Front {get;set;}
+ public int L_Seal_Temp_4_Back {get;set;}
+public int L_Seal_Temp_5_Front {get;set;}
+ public int L_Seal_Temp_5_Back {get;set;}
+public int L_Seal_Temp_6_Front {get;set;}
+ public int L_Seal_Temp_6_Back {get;set;}
+public int L_Seal_Temp_7_Front {get;set;}
+ public int L_Seal_Temp_7_Back {get;set;}
+public bool Hole_Punch {get;set;}
+ public int Heater_Bar_Temp_1A {get;set;}
+ public int Heater_Bar_Temp_1B {get;set;}
+ public int Heater_Bar_Temp_2A {get;set;}
+ public int Heater_Bar_Temp_2B {get;set;}
+public float Heater_Bar_Temp_P {get;set;}
+public float Heater_Bar_Temp_S {get;set;}
+ public int TC_1 {get;set;}
+ public int TC_2 {get;set;}
+ public int TC_Edge_Trim {get;set;}
+ public int TC_Torch {get;set;}
+ public int TC_Marriage_Roll {get;set;}
+public int TC_Inspection_Drive {get;set;}
+public int TC_Web_Slitting {get;set;}
+ public int Opening_Validation {get;set;}
+public int Machine_Speed {get;set;}
+public bool Up_Down_Time {get;set;}
+public int Bag_Counter {get;set;}
+public int DeclareBags {get;set;}
+ public int Sealer_Alarm {get;set;}
+ public int Registration_Alarm {get;set;}
+public float Drum_Temp {get;set;}
+
+ }
+ }
+
+ Reviewed by : Gouri Sankar

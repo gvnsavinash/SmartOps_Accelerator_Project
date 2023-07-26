@@ -1,0 +1,123 @@
+//***************************************************************************************************************************************//
+/*
+Project Name :  <<<Header.1.!Id!.Project_name.!Value!>>>
+Task : Reading data From IoT Hub to FunctionApp
+Developed on : <<<Header.1.!Id!.Developed_on.!Value!>>>
+Developed by :<<<Header.1.!Id!.Developed_by.!Value!>>>
+Version : <<<Header.1.!Id!.Version.!Value!>>>
+Program Language : C#
+Reviewed by : <<<Header.1.!Id!.Reviewed_name.!Value!>>>   <<<Header.1.!Id!.Reviewed_date.!Value!>>>
+*/
+
+
+
+using IoTHubTrigger = Microsoft.Azure.WebJobs.EventHubTriggerAttribute;
+using System.Data;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.EventHubs;
+using System.Text;
+using System.Net.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using Microsoft.Azure.Services.AppAuthentication;
+using System.Security;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Data.SqlClient;
+
+
+
+
+namespace <<<Header.1.!Id!.NameSpace.!Value!>>>
+{
+public static class <<<Header.1.!Id!.ClassName.!Value!>>>
+{
+private static HttpClient client = new HttpClient();
+
+
+
+[FunctionName(" <<<Header.1.!Id!.ClassName.!Value!>>> ")]
+public static void Run([IoTHubTrigger(" <<<Header.1.!Id!.IOT_Hubname.!Value!>>> ", Connection = " <<<Header.1.!Id!.IOT_Connection.!Value!>>> ")] EventData message, ILogger log)
+{
+// Read IoT hub receiving data
+log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");
+var deviceid = message.SystemProperties["iothub-connection-device-id"].ToString();
+
+
+
+
+try
+{
+//parsing the input json data
+
+
+
+Telemetry tsmg = JsonConvert.DeserializeObject<Telemetry>(Encoding.UTF8.GetString(message.Body.Array));
+
+
+
+// Providing SQL credentials
+
+<<<Header.1.!Id!.SQl_Connection.!Value!>>>
+
+
+
+using (SqlConnection con = new SqlConnection(strcon))
+{
+
+
+
+con.Open();
+if (con.State == ConnectionState.Open)
+{
+
+
+
+String query = $"INSERT INTO <<<Header.1.!Id!.Table_Name.!Value!>>>  (<<<Detail.2.Id.ALL>>> )" +
+
+$"VALUES (<<<Detail.2.Id.Extended>>> )";
+
+
+
+
+
+
+SqlCommand sqlcmd1 = new SqlCommand(query, con);
+
+
+<<<Detail.3.sqlcmd.Parameters.AddWithValue(!Id!.!tsmg.!!Id!>>>
+
+		// Need to add some more code//
+
+
+
+}
+con.Close();
+Console.WriteLine("***************DONE**************");
+}
+}
+catch (Exception e)
+{
+log.LogInformation(e.Message);
+}
+
+
+
+}
+}
+
+
+
+// input parameters maping to sql db from input data
+public class Telemetry
+{
+
+
+<<<Detail.4.public.!Data_Type!.!Id!.!{get;set;}!>>>
+
+}
+}
+
+Reviewed by : <<<Header.1.!Id!.Reviewed_name.!Value!>>>

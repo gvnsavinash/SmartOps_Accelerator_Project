@@ -1,0 +1,135 @@
+ //***************************************************************************************************************************************//
+ /*
+ Project Name : Trail
+ Task : Reading data From IoT Hub to FunctionApp
+ Developed on : April
+ Developed by :Avinash
+ Version : "1.20"
+ Program Language : C#
+ Reviewed by : Avinash "06-12-2021"
+ */
+
+
+
+ using IoTHubTrigger = Microsoft.Azure.WebJobs.EventHubTriggerAttribute;
+ using System.Data;
+ using Microsoft.Azure.WebJobs;
+ using Microsoft.Azure.WebJobs.Host;
+ using Microsoft.Azure.EventHubs;
+ using System.Text;
+ using System.Net.Http;
+ using Microsoft.Extensions.Logging;
+ using Newtonsoft.Json;
+ using System;
+ using System.Collections.Generic;
+ using Microsoft.Azure.Services.AppAuthentication;
+ using System.Security;
+ using Microsoft.IdentityModel.Clients.ActiveDirectory;
+ using Microsoft.Data.SqlClient;
+
+
+
+
+ namespace IoThubtoSql
+ {
+ public static class IoThubToSqlDB
+ {
+ private static HttpClient client = new HttpClient();
+
+
+
+ [FunctionName(" IoThubToSqlDB ")]
+ public static void Run([IoTHubTrigger(" iottoadttest ", Connection = " AzureIoThubCnnectionString ")] EventData message, ILogger log)
+ {
+ // Read IoT hub receiving data
+ log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");
+ var deviceid = message.SystemProperties["iothub-connection-device-id"].ToString();
+
+
+
+
+ try
+ {
+ //parsing the input json data
+
+
+
+ Telemetry tsmg = JsonConvert.DeserializeObject<Telemetry>(Encoding.UTF8.GetString(message.Body.Array));
+
+
+
+ // Providing SQL credentials
+
+ string strcon = @"Server=tcp:covtest.database.windows.net,1433;Initial Catalog=Smart_Mfgs;Persist Security Info=False;User ID=covadmin;Password=covtest@01;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
+
+
+ using (SqlConnection con = new SqlConnection(strcon))
+ {
+
+
+
+ con.Open();
+ if (con.State == ConnectionState.Open)
+ {
+
+
+
+ String query = $"INSERT INTO CF.STG_PLC (Plant,Line,Name,Ordernumber,Pressure,Temperature,Humidity )" +
+
+ $"VALUES (@Plant,@Line,@Name,@Ordernumber,@Pressure,@Temperature,@Humidity )";
+
+
+
+
+
+
+ SqlCommand sqlcmd1 = new SqlCommand(query, con);
+
+
+ sqlcmd.Parameters.AddWithValue("@Plant",tsmg.Plant);
+sqlcmd.Parameters.AddWithValue("@Line",tsmg.Line);
+sqlcmd.Parameters.AddWithValue("@Name",tsmg.Name);
+sqlcmd.Parameters.AddWithValue("@Ordernumber",tsmg.Ordernumber);
+sqlcmd.Parameters.AddWithValue("@Pressure",tsmg.Pressure);
+sqlcmd.Parameters.AddWithValue("@Temperature",tsmg.Temperature);
+sqlcmd.Parameters.AddWithValue("@Humidity",tsmg.Humidity);
+
+ // Need to add some more code//
+
+
+
+ }
+ con.Close();
+ Console.WriteLine("***************DONE**************");
+ }
+ }
+ catch (Exception e)
+ {
+ log.LogInformation(e.Message);
+ }
+
+
+
+ }
+ }
+
+
+
+ // input parameters maping to sql db from input data
+ public class Telemetry
+ {
+
+
+ public string Plant {get;set;}
+public int Line {get;set;}
+ public string Name {get;set;}
+public string Ordernumber {get;set;}
+public int Pressure {get;set;}
+ public int Temperature {get;set;}
+public int Humidity {get;set;}
+
+ }
+ }
+
+ Reviewed by : Avinash
