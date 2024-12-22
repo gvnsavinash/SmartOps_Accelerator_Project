@@ -60,7 +60,7 @@
 
  // Providing SQL credentials
 
- string strcon = @"Server=tcp:covtest.database.windows.net,1433;Initial Catalog=Smart_Mfgs;Persist Security Info=False;User ID=covadmin;Password=covtest@01;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
 
 
 
